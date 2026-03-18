@@ -1,49 +1,12 @@
-# Unity
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uild/
-[Bb]uilds/
-[Ll]ogs/
-[Uu]ser[Ss]ettings/
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
 LunaTemp/
 *.csproj
 *.sln
-*.suo
-*.tmp
-*.user
-*.userprefs
-*.pidb
-*.booproj
-*.svd
-*.pdb
-*.mdb
-*.opendb
-*.VC.db
-*.pidb.meta
-*.pdb.meta
-*.mdb.meta
-
-# 删除：不需要的目录
-ART/
-Arts/
-DEV/
-Shader/
-Shaders/
-TutorialInfo/
-TextMesh Pro/
-Plugins/OutlineForColor/
-Plugins/Sirenix/
-Program/Script/AStar/
-Program/Script/Controllers/
-Program/Script/Entities/
-Program/Script/UI/
-Program/Script/Utilities/BySakanakoChan/
-中文文件夹/
-
-# SVN
+.vs/
 .svn/
-
-# OS
-.DS_Store
-Thumbs.db
