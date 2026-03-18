@@ -125,12 +125,11 @@
                 "Stubs/MoreMountains.NiceVibrations"
             ],
             "includes": [
-                "Assets/Resources/DOTweenSettings.asset",
-                "Assets/TextMesh Pro/Resources/TMP Settings.asset"
+                "Assets/Resources/DOTweenSettings.asset"
             ]
         },
         "scenes": [
-            "Assets/Scenes/SampleScene.unity"
+            "Assets/Scenes/templeteScene.unity"
         ],
         "disabledScenes": [],
         "startupScene": 0,
@@ -236,7 +235,7 @@
                     "channels": 1,
                     "startTime": "00:00.000",
                     "endTime": "00:00.000",
-                    "lengthInSeconds": 0.0,
+                    "lengthInSeconds": 0,
                     "bitrate": 128,
                     "script": "",
                     "ext": ""
