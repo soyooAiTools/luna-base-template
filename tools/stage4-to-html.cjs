@@ -5,6 +5,7 @@ const zlib = require('zlib');
 
 const stage4Dir = process.argv[2] || 'D:/work/test-luna/Client/LunaTemp/stage4/develop';
 const outputDir = process.argv[3] || 'D:/worker-repo/html-output';
+const STRIP_MODULES = (process.argv[4] || '').split(',').filter(Boolean);
 if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
 // 1. Read iframe.html
@@ -52,7 +53,7 @@ window.DEVELOP=true;window.TRACE=false;window.TESTS=false;window.DEBUG=false;win
 window.MODULE_physics3d=true;window.MODULE_physics2d=true;window.MODULE_particle_system=true;
 window.MODULE_reflection=true;window.MODULE_prefabs=true;window.MODULE_mecanim=true;
 (function(){
-var __fd = ${JSON.stringify(fileDict)};
+var __fd = ${JSON.stringify(fileDict).replace(/<(\/?)script/gi, '\\x3c$1script')};
 function b2ab(b){var s=atob(b),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a.buffer}
 function findEntry(url){
   var fn=url;if(!fn)return null;
@@ -124,17 +125,29 @@ html = html.replace('<body>', '<body>' + interceptor);
 
 // 5. Replace external script src with inline content
 // Match both forward slash and backslash paths
+let strippedSize = 0;
 html = html.replace(/<script\s+src="([^"]+)"\s+defer="defer"\s+type="text\/javascript"><\/script>/g, (match, src) => {
-  // Normalize path separators
   const normalizedSrc = src.replace(/\\/g, '/');
+  const basename = path.basename(normalizedSrc, '.js');
+  
+  // Strip unwanted modules
+  if (STRIP_MODULES.some(mod => basename.toLowerCase().includes(mod.toLowerCase()))) {
+    console.log(`  STRIPPED: ${normalizedSrc}`);
+    const fp = path.join(stage4Dir, normalizedSrc);
+    if (fs.existsSync(fp)) strippedSize += fs.statSync(fp).size;
+    return `<script>/* STRIPPED: ${normalizedSrc} */\n<\/script>`;
+  }
+  
   const fp = path.join(stage4Dir, normalizedSrc);
   if (fs.existsSync(fp)) {
-    const content = fs.readFileSync(fp, 'utf8');
+    let content = fs.readFileSync(fp, 'utf8');
+    content = content.replace(/<(\/?)script/gi, '\\x3c$1script');
     return `<script>/* ${normalizedSrc} */\n${content}\n<\/script>`;
   }
   console.warn('Missing script:', fp);
   return match;
 });
+if (strippedSize > 0) console.log(`Total stripped: ${(strippedSize/1024).toFixed(0)}KB`);
 
 // 6. Write output
 const outPath = path.join(outputDir, 'playable_v3.html');
