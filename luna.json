@@ -1,14 +1,14 @@
 {
-    "version": "6.4.0",
+    "version": "7.1.0",
     "projectId": "181ed7a210daeef4d938a69d80605319",
     "applicationID": 0,
-    "creativeName": "",
+    "creativeName": "123",
     "pgServer": "EU",
     "window": {
         "bool_0": true
     },
     "unity": {
-        "environmentID": -716271058,
+        "environmentID": -1073174104,
         "scripts": {
             "excludes": [
                 "**/Editor/",
@@ -76,12 +76,12 @@
                 "Stubs/SupersonicWisdom/"
             ],
             "msbuildMac64": "/Library/Frameworks/Mono.framework/Versions/Current/bin/msbuild",
-            "msbuildWin64": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe",
+            "msbuildWin64": "D:\\VS2022\\MSBuild\\Current\\Bin\\MSBuild.exe",
             "externalSources": [],
             "externalJSLibraries": [],
             "scriptingDefines": [],
-            "msbuildVersion": "17.14",
-            "monoVersion": "N/A",
+            "msbuildVersion": "17.11",
+            "monoVersion": "8.0.8",
             "dotnetVersion": ""
         },
         "assets": {
@@ -160,11 +160,42 @@
         "minify": true,
         "forceUncompressed": false,
         "forceBase64": false,
-        "graphicsConstraint": 28,
+        "graphicsConstraint": 24,
         "genericCheck": true,
-        "disableAntiAliasing": true,
+        "disableAntiAliasing": false,
         "forceStableRandomSeed": false,
-        "unusedModules": [],
+        "unusedModules": [
+            {
+                "name": "physics3d",
+                "excluded": false,
+                "forceIncluded": false
+            },
+            {
+                "name": "physics2d",
+                "excluded": false,
+                "forceIncluded": false
+            },
+            {
+                "name": "particle-system",
+                "excluded": false,
+                "forceIncluded": false
+            },
+            {
+                "name": "reflection",
+                "excluded": false,
+                "forceIncluded": false
+            },
+            {
+                "name": "prefabs",
+                "excluded": false,
+                "forceIncluded": false
+            },
+            {
+                "name": "mecanim-wasm",
+                "excluded": false,
+                "forceIncluded": false
+            }
+        ],
         "disableRuntimeAnalysisForCode": true,
         "disableRuntimeAnalysisForShaders": false,
         "useShadersCache": true,
@@ -235,7 +266,7 @@
                     "channels": 1,
                     "startTime": "00:00.000",
                     "endTime": "00:00.000",
-                    "lengthInSeconds": 0,
+                    "lengthInSeconds": 0.0,
                     "bitrate": 128,
                     "script": "",
                     "ext": ""
@@ -255,7 +286,10 @@
             },
             "meshes": {
                 "default": {
-                    "halfPrecision": true
+                    "halfPrecision": true,
+                    "useSimplification": false,
+                    "simplificationPercentage": 30,
+                    "linkCloseVertices": true
                 },
                 "overrides": []
             },
@@ -266,6 +300,17 @@
                 },
                 "overrides": []
             }
+        }
+    },
+    "postprocesses": {
+        "ssao": {
+            "isActive": false,
+            "samplingQuality": 1,
+            "normalsQuality": 0,
+            "blurQuality": 0,
+            "radius": 0.1,
+            "intensity": 1.0,
+            "falloff": 100.0
         }
     },
     "logLevel_Cs": "error",

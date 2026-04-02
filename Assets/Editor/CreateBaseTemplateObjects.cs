@@ -1,203 +1,287 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
-/// <summary>
-/// 基础样例工程 — 一键批量创建预制对象
-/// 使用方式: Unity 菜单 → Tools → Create Base Template Objects
-/// 创建后 Ctrl+S 保存场景，然后 SVN commit
-/// </summary>
-public class CreateBaseTemplateObjects : MonoBehaviour
+public class CreateLunaPool : MonoBehaviour
 {
-    [MenuItem("Tools/Create Base Template Objects")]
+    const string MAT_FOLDER = "Assets/__LunaMaterials";
+
+    [MenuItem("Tools/Create Luna Pool")]
     static void CreateAll()
     {
-        // 清理旧的预制对象（如果重复运行）
-        GameObject old = GameObject.Find("__BaseTemplate");
+        // 删除旧的
+        GameObject old = GameObject.Find("__LunaPool");
         if (old != null) DestroyImmediate(old);
 
-        GameObject root = new GameObject("__BaseTemplate");
-        root.transform.position = Vector3.zero;
+        // 创建根节点
+        GameObject root = new GameObject("__LunaPool");
 
         int count = 0;
 
-        // ========== 环境 ==========
-        // Ground
-        count += CreateObj(root, "Ground", PrimitiveType.Plane, 
-            new Vector3(0, 0, 0), new Vector3(10, 1, 10), C(0.35f, 0.3f, 0.15f));
+        // 创建基础
+        CreateMaterialSource(root);
+        CreateGround(root);
+        CreateMainLight();
+        ConfigureMainCamera();
+        // 创建池
+        count += CreatePool(root, PrimitiveType.Cube, 5);
+        count += CreatePool(root, PrimitiveType.Sphere, 5);
+        count += CreatePool(root, PrimitiveType.Cylinder, 3);
+        count += CreatePool(root, PrimitiveType.Plane, 3);
 
-        // ========== 通用 ==========
-        count += CreateObj(root, "Player", PrimitiveType.Cube,
-            V(-999), new Vector3(1, 2, 1), C(0.2f, 0.4f, 0.9f));
-
-        count += CreateBatch(root, "Wall", 10, PrimitiveType.Cube,
-            new Vector3(4, 1, 0.3f), C(0.3f, 0.3f, 0.3f));
-
-        count += CreateBatch(root, "Coin", 15, PrimitiveType.Sphere,
-            new Vector3(0.4f, 0.4f, 0.4f), C(1f, 0.85f, 0f));
-
-        count += CreateBatch(root, "Gem", 10, PrimitiveType.Sphere,
-            new Vector3(0.4f, 0.4f, 0.4f), C(0.6f, 0.2f, 0.8f));
-
-        // ========== SLG / 塔防 ==========
-        count += CreateBatch(root, "Building", 8, PrimitiveType.Cube,
-            new Vector3(2, 2, 2), C(0.85f, 0.7f, 0.4f));
-
-        count += CreateBatch(root, "Turret", 8, PrimitiveType.Cylinder,
-            new Vector3(0.6f, 1, 0.6f), C(0.5f, 0.5f, 0.55f));
-
-        count += CreateBatch(root, "Castle", 2, PrimitiveType.Cube,
-            new Vector3(4, 4, 4), C(0.75f, 0.75f, 0.7f));
-
-        count += CreateBatch(root, "Farm", 5, PrimitiveType.Cube,
-            new Vector3(2, 0.5f, 2), C(0.5f, 0.75f, 0.3f));
-
-        count += CreateBatch(root, "Mine", 5, PrimitiveType.Cube,
-            new Vector3(1.5f, 1.5f, 1.5f), C(0.4f, 0.25f, 0.1f));
-
-        count += CreateBatch(root, "Barracks", 3, PrimitiveType.Cube,
-            new Vector3(2, 1.5f, 2), C(0.6f, 0.2f, 0.2f));
-
-        count += CreateBatch(root, "Worker", 8, PrimitiveType.Cube,
-            new Vector3(0.8f, 1.2f, 0.8f), C(0.9f, 0.6f, 0.2f));
-
-        count += CreateBatch(root, "Soldier", 10, PrimitiveType.Cube,
-            new Vector3(0.8f, 1.4f, 0.8f), C(0.3f, 0.45f, 0.2f));
-
-        count += CreateBatch(root, "Archer", 8, PrimitiveType.Cylinder,
-            new Vector3(0.5f, 1.2f, 0.5f), C(0.6f, 0.35f, 0.1f));
-
-        count += CreateBatch(root, "Flag", 5, PrimitiveType.Cylinder,
-            new Vector3(0.15f, 2, 0.15f), C(0.85f, 0.15f, 0.15f));
-
-        count += CreateBatch(root, "Shield", 5, PrimitiveType.Sphere,
-            new Vector3(1, 0.2f, 1), C(0.8f, 0.8f, 0.85f));
-
-        // ========== 射击 / 战斗 ==========
-        count += CreateBatch(root, "Enemy", 15, PrimitiveType.Sphere,
-            new Vector3(1, 1, 1), C(0.85f, 0.15f, 0.15f));
-
-        count += CreateBatch(root, "Boss", 3, PrimitiveType.Sphere,
-            new Vector3(2, 2, 2), C(0.5f, 0.1f, 0.1f));
-
-        count += CreateBatch(root, "Arrow", 15, PrimitiveType.Cube,
-            new Vector3(0.1f, 0.1f, 1), C(0.9f, 0.9f, 0.9f));
-
-        count += CreateBatch(root, "Bullet", 15, PrimitiveType.Sphere,
-            new Vector3(0.2f, 0.2f, 0.2f), C(1f, 0.9f, 0.2f));
-
-        count += CreateBatch(root, "Bomb", 8, PrimitiveType.Sphere,
-            new Vector3(0.8f, 0.8f, 0.8f), C(0.15f, 0.15f, 0.15f));
-
-        count += CreateBatch(root, "Sword", 5, PrimitiveType.Cube,
-            new Vector3(0.1f, 1.5f, 0.15f), C(0.8f, 0.8f, 0.85f));
-
-        // ========== 太空 ==========
-        count += CreateBatch(root, "Spaceship", 5, PrimitiveType.Cube,
-            new Vector3(1.5f, 0.5f, 2.5f), C(0.6f, 0.7f, 0.85f));
-
-        count += CreateBatch(root, "Satellite", 5, PrimitiveType.Sphere,
-            new Vector3(0.8f, 0.8f, 0.8f), C(0.8f, 0.8f, 0.8f));
-
-        count += CreateBatch(root, "Asteroid", 10, PrimitiveType.Sphere,
-            new Vector3(1.5f, 1.2f, 1.5f), C(0.4f, 0.35f, 0.3f));
-
-        count += CreateBatch(root, "SpaceStation", 2, PrimitiveType.Cube,
-            new Vector3(5, 3, 5), C(0.85f, 0.85f, 0.85f));
-
-        count += CreateBatch(root, "Planet", 3, PrimitiveType.Sphere,
-            new Vector3(4, 4, 4), C(0.2f, 0.5f, 0.7f));
-
-        count += CreateBatch(root, "Rocket", 5, PrimitiveType.Cylinder,
-            new Vector3(0.3f, 2, 0.3f), C(0.9f, 0.3f, 0.2f));
-
-        // ========== 装饰 / 环境 ==========
-        // Tree = 树干(Cylinder) + 树冠(Sphere) 组合
-        for (int i = 1; i <= 15; i++)
-        {
-            GameObject tree = new GameObject("Tree_" + i);
-            tree.transform.parent = root.transform;
-            tree.transform.position = V(-999);
-
-            GameObject trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            trunk.name = "Trunk";
-            trunk.transform.parent = tree.transform;
-            trunk.transform.localPosition = new Vector3(0, 0.75f, 0);
-            trunk.transform.localScale = new Vector3(0.3f, 0.75f, 0.3f);
-            SetColor(trunk, C(0.4f, 0.25f, 0.1f));
-
-            GameObject crown = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            crown.name = "Crown";
-            crown.transform.parent = tree.transform;
-            crown.transform.localPosition = new Vector3(0, 2, 0);
-            crown.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-            SetColor(crown, C(0.1f, 0.55f, 0.1f));
-
-            count++;
-        }
-
-        count += CreateBatch(root, "Rock", 10, PrimitiveType.Sphere,
-            new Vector3(1, 0.6f, 1), C(0.5f, 0.5f, 0.45f));
-
-        count += CreateBatch(root, "Bush", 8, PrimitiveType.Sphere,
-            new Vector3(0.8f, 0.5f, 0.8f), C(0.15f, 0.4f, 0.1f));
-
-        count += CreateBatch(root, "Water", 3, PrimitiveType.Plane,
-            new Vector3(5, 1, 5), C(0.3f, 0.6f, 0.9f));
-
-        count += CreateBatch(root, "Road", 8, PrimitiveType.Cube,
-            new Vector3(4, 0.1f, 1), C(0.65f, 0.65f, 0.6f));
-
-        count += CreateBatch(root, "Bridge", 3, PrimitiveType.Cube,
-            new Vector3(3, 0.2f, 1.5f), C(0.6f, 0.35f, 0.1f));
-
-        // ========== 标记完成 ==========
         EditorUtility.SetDirty(root);
-        Debug.Log("✅ Base Template Created: " + count + " objects. 请 Ctrl+S 保存场景！");
-        EditorUtility.DisplayDialog("Base Template", 
-            "已创建 " + count + " 个预制对象！\n\n请 Ctrl+S 保存场景，然后 SVN commit。", "OK");
+
+        Debug.Log("✅ Luna Pool Created: " + count);
     }
 
-    // ========== 工具方法 ==========
+    // ===============================
+    // 颜色表
+    // ===============================
 
-    static Vector3 V(float y) { return new Vector3(0, y, 0); }
-    static Color C(float r, float g, float b) { return new Color(r, g, b); }
-
-    /// <summary>批量创建同类对象 Name_1 ~ Name_N</summary>
-    static int CreateBatch(GameObject parent, string baseName, int count, 
-        PrimitiveType type, Vector3 scale, Color color)
+    static (string name, string hex)[] colors =
     {
-        for (int i = 1; i <= count; i++)
+        ("Red", "#E74C3C"),
+        ("Blue", "#3498DB"),
+        ("Green", "#2ECC71"),
+        ("Yellow", "#F1C40F"),
+        ("Orange", "#E67E22"),
+        ("Purple", "#9B59B6"),
+        ("White", "#FFFFFF"),
+        ("Brown", "#8B4513"),
+        ("Cyan", "#00BCD4"),
+        ("Pink", "#E91E63"),
+    };
+
+    // ===============================
+    // 创建颜色池
+    // ===============================
+
+    static int CreatePool(GameObject root, PrimitiveType type, int perColor)
+    {
+        int count = 0;
+
+        foreach (var c in colors)
         {
-            CreateObj(parent, baseName + "_" + i, type, V(-999), scale, color);
+            Color col;
+            ColorUtility.TryParseHtmlString(c.hex, out col);
+
+            for (int i = 1; i <= perColor; i++)
+            {
+                string name =
+                    $"__Pool_{type}_{c.name}_{i:00}";
+
+                CreateObj(
+                    root,
+                    name,
+                    type,
+                    new Vector3(0, -9999, 0),
+                    Vector3.one,
+                    c.name,
+                    col
+                );
+
+                count++;
+            }
         }
+
         return count;
     }
 
-    /// <summary>创建单个对象</summary>
-    static int CreateObj(GameObject parent, string name, PrimitiveType type, 
-        Vector3 position, Vector3 scale, Color color)
+    // ===============================
+    // 创建对象
+    // ===============================
+
+    static void CreateObj(
+        GameObject parent,
+        string name,
+        PrimitiveType type,
+        Vector3 pos,
+        Vector3 scale,
+        string colorName,
+        Color color)
     {
-        GameObject obj = GameObject.CreatePrimitive(type);
+        GameObject obj =
+            GameObject.CreatePrimitive(type);
+
         obj.name = name;
         obj.transform.parent = parent.transform;
-        obj.transform.position = position;
+        obj.transform.position = pos;
         obj.transform.localScale = scale;
-        SetColor(obj, color);
-        return 1;
+
+        SetColor(obj, type, colorName, color);
     }
 
-    /// <summary>设置颜色（创建新材质实例）</summary>
-    static void SetColor(GameObject obj, Color color)
+    // ===============================
+    // 材质缓存
+    // ===============================
+
+    static Dictionary<string, Material> matCache
+        = new Dictionary<string, Material>();
+
+    static void SetColor(
+        GameObject obj,
+        PrimitiveType type,
+        string colorName,
+        Color color)
     {
-        Renderer r = obj.GetComponent<Renderer>();
-        if (r != null)
+        string key = type + "_" + colorName;
+
+        if (!matCache.ContainsKey(key))
         {
-            // 用 URP/Lit shader 创建材质
-            Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.SetColor("_BaseColor", color);
-            r.sharedMaterial = mat;
+            Material mat = GetOrCreateMaterial(
+                type,
+                colorName,
+                color);
+
+            matCache.Add(key, mat);
         }
+
+        obj.GetComponent<Renderer>().sharedMaterial =
+            matCache[key];
+    }
+
+    // ===============================
+    // 创建/加载材质 (.mat)
+    // ===============================
+
+    static Material GetOrCreateMaterial(
+        PrimitiveType type,
+        string colorName,
+        Color color)
+    {
+        if (!AssetDatabase.IsValidFolder(MAT_FOLDER))
+        {
+            AssetDatabase.CreateFolder(
+                "Assets",
+                "__LunaMaterials");
+        }
+
+        string path =
+            $"{MAT_FOLDER}/{type}_{colorName}.mat";
+
+        Material mat =
+            AssetDatabase.LoadAssetAtPath<Material>(path);
+
+        if (mat == null)
+        {
+            mat = new Material(
+                Shader.Find(
+                    "Universal Render Pipeline/Lit"));
+
+            mat.name = $"{type}_{colorName}";
+
+            mat.SetColor("_BaseColor", color);
+
+            AssetDatabase.CreateAsset(mat, path);
+        }
+
+        return mat;
+    }
+
+    // ===============================
+    // __MaterialSource
+    // ===============================
+
+    static void CreateMaterialSource(GameObject root)
+    {
+        GameObject obj =
+            GameObject.CreatePrimitive(
+                PrimitiveType.Cube);
+
+        obj.name = "__MaterialSource";
+
+        obj.transform.parent = root.transform;
+        obj.transform.position =
+            new Vector3(0, -9999, 0);
+
+        Material mat =
+            GetOrCreateMaterial(
+                PrimitiveType.Cube,
+                "Source",
+                Color.white);
+
+        obj.GetComponent<Renderer>().sharedMaterial =
+            mat;
+    }
+
+    // ===============================
+    // __Ground
+    // ===============================
+
+    static void CreateGround(GameObject root)
+    {
+        GameObject obj =
+            GameObject.CreatePrimitive(
+                PrimitiveType.Cube);
+
+        obj.name = "__Ground";
+
+        obj.transform.parent = root.transform;
+        obj.transform.position = Vector3.zero;
+        obj.transform.localScale =
+            new Vector3(50, 0.1f, 50);
+
+        Color col;
+        ColorUtility.TryParseHtmlString(
+            "#C0C4CC", out col);
+
+        SetColor(
+            obj,
+            PrimitiveType.Cube,
+            "Ground",
+            col);
+    }
+
+    // ===============================
+    // __MainLight
+    // ===============================
+
+    static void CreateMainLight()
+    {
+        GameObject old = GameObject.Find("__MainLight");
+        if (old != null) DestroyImmediate(old);
+        GameObject lightObj =
+            new GameObject("__MainLight");
+
+        Light light =
+            lightObj.AddComponent<Light>();
+
+        light.type = LightType.Directional;
+        light.intensity = 1f;
+
+        lightObj.transform.rotation =
+            Quaternion.Euler(50, -30, 0);
+    }
+    static void ConfigureMainCamera()
+    {
+        Camera cam = Camera.main;
+
+        if (cam == null)
+        {
+            GameObject camObj = new GameObject("Main Camera");
+            cam = camObj.AddComponent<Camera>();
+            cam.tag = "MainCamera";
+        }
+
+        // Position
+        cam.transform.position =
+            new Vector3(0, 8, -12);
+
+        // Rotation
+        cam.transform.rotation =
+            Quaternion.Euler(35, 0, 0);
+
+        // Clear Flags
+        cam.clearFlags =
+            CameraClearFlags.SolidColor;
+
+        // Background color #738B9E
+        Color bg;
+        ColorUtility.TryParseHtmlString(
+            "#738B9E", out bg);
+
+        cam.backgroundColor = bg;
     }
 }
 #endif

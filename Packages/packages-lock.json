@@ -55,6 +55,12 @@
       "dependencies": {},
       "url": "https://packages.unity.cn"
     },
+    "com.unity.playworks.upp": {
+      "version": "file:C:/7.1.0/scripts",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.render-pipelines.core": {
       "version": "14.0.9",
       "depth": 1,
@@ -152,12 +158,6 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.cn"
-    },
-    "uk.lunalabs.luna": {
-      "version": "file:C:/Users/Administrator/Desktop/6.4.0/scripts",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {}
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
