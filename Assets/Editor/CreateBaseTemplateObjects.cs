@@ -110,6 +110,10 @@ public class CreateLunaPool : MonoBehaviour
         obj.transform.localScale = scale;
 
         SetColor(obj, type, colorName, color);
+
+        // Pre-bake ScriptActivator (inactive by default, activated at runtime)
+        if (obj.GetComponent<ScriptActivator>() == null)
+            obj.AddComponent<ScriptActivator>();
     }
 
     // ===============================
